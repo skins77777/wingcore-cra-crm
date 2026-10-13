@@ -1,0 +1,23 @@
+{
+  "name": "@cra/twenty-approval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": { "node": ">=24.5.0" },
+  "scripts": {
+    "build": "twenty dev:build .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "24.7.2",
+    "@types/react": "19.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "twenty-client-sdk": "2.41.0",
+    "twenty-sdk": "2.41.0",
+    "twenty-ui": "2.41.0",
+    "typescript": "5.9.3"
+  }
+}

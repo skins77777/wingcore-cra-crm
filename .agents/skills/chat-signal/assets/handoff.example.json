@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "chat-signal.handoff.v1",
+  "companyName": "合成企业",
+  "status": "draft",
+  "workspaceRef": "synthetic-workspace",
+  "timezone": "Asia/Shanghai",
+  "blueprint": {
+    "path": "crm-foundation/blueprint.md",
+    "version": "synthetic-v1",
+    "confirmed": false
+  },
+  "runtime": {
+    "artifactRef": "example-only/not-a-release",
+    "version": null,
+    "capabilities": [],
+    "verificationRef": null
+  },
+  "fields": [
+    {
+      "id": "purchase.stage",
+      "meaning": "该笔采购进度",
+      "source": "chat",
+      "writer": "automation",
+      "writePolicy": "auto",
+      "mapping": {
+        "object": "opportunities",
+        "field": "stage",
+        "type": "enum",
+        "enumValues": {
+          "签约": "SIGNED"
+        }
+      },
+      "confirmed": false,
+      "verified": false
+    }
+  ],
+  "rules": [
+    {
+      "id": "signed-stage",
+      "definition": "双方明确合同已签订才进入签约阶段",
+      "fieldIds": [
+        "purchase.stage"
+      ],
+      "requires": [
+        "facts.contract.v1"
+      ],
+      "executor": "automation",
+      "confirmed": false,
+      "caseIds": [
+        "signed",
+        "intent"
+      ]
+    }
+  ],
+  "channels": [
+    {
+      "id": "sales-a",
+      "provider": "synthetic",
+      "instanceRef": "synthetic-instance",
+      "ownerRef": "synthetic-owner",
+      "secretRef": "env:SYNTHETIC_WEBHOOK_SECRET",
+      "configured": false
+    }
+  ],
+  "cases": [
+    {
+      "id": "signed",
+      "kind": "positive",
+      "input": "合成：已确认签订合同。",
+      "expected": "该笔采购进入签约阶段"
+    },
+    {
+      "id": "intent",
+      "kind": "boundary",
+      "input": "合成：下周考虑签约。",
+      "expected": "不推进阶段"
+    }
+  ],
+  "unresolved": [
+    "合成示例：需读取实际字段、组件能力和部署身份；不代表客户确认或系统已运行。"
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chat Signal 消息驱动 CRM"
+  short_description: "承接业务流程，问清阶段与字段变更规则，接通 WhatsApp、Email 和模型自动更新 CRM"
+  default_prompt: "使用 $chat-signal，先读已有 CRM 流程与字段，问清缺少的阶段和字段变更规则，再配置 WhatsApp、Email、模型提取与 CRM 更新。"

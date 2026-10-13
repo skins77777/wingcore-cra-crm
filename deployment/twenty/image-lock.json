@@ -1,0 +1,14 @@
+[
+  {
+    "Image": "twentycrm/twenty:v2.45.0",
+    "Digest": "twentycrm/twenty@sha256:81b6444c146fc39aec5e8de6ff6f996c78714910abf117f129ba78c925690dfd"
+  },
+  {
+    "Image": "postgres:16",
+    "Digest": "postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d"
+  },
+  {
+    "Image": "redis:7.4",
+    "Digest": "redis@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85"
+  }
+]

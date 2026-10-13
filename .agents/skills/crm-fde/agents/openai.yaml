@@ -1,0 +1,4 @@
+interface:
+  display_name: "CRM 基建教练"
+  short_description: "通过简短问答教会客户管理，建立字段、商机与工作流，并学会自主调整"
+  default_prompt: "使用 $crm-fde，结合我的业务逐步解释客户分级、销售流程和字段，协助我搭建 CRM 基建并学会自己调整。"

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "enabled": true,
+  "person_ids": ["ca4965c5-ee93-5983-b53d-8fd05384c652"],
+  "auto_write": {"object": "opportunities", "field": "craPurchaseStage", "from": "询盘", "to": "需求确认"},
+  "semantic_adapter": "r02_explicit_statement_v1",
+  "model_fallback": "new_known_customer_text_candidates_only",
+  "authorization_basis": "用户已确认R01同需求续更新、R02推进条件，并于2026-10-12要求继续接通新消息事实核验与阶段写入。明确条件内正常更新不逐笔重新审核。",
+  "orders_enabled": false,
+  "outbound_messages_enabled": false,
+  "media_recognition_enabled": false
+}

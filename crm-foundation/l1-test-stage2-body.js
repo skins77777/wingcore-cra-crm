@@ -1,0 +1,23 @@
+export const main=async()=>{
+ const admin=new RestApiClient({baseUrl:'http://server:3000'}),api=new RestApiClient({baseUrl:'http://server:3000',token:process.env.CRA_T1_API_KEY});
+ const id='73779383-9e27-5e0f-9b74-c7fb685e646b',checks=[];
+ const check=(v,label)=>{if(!v)throw new Error(label);checks.push(label);};
+ const tasks=async()=>(await api.get('/rest/tasks',{query:{filter:'craReplyReviewOpportunityId[eq]:'+id,limit:200}})).data.tasks;
+ const next=new Date(Date.now()-86400000).toISOString();
+ await admin.patch('/rest/opportunities/'+id,{craReplyReviewNextAt:next});
+ check((await runScan()).created===1,'explicit deferred date creates one next review when due');
+ check((await runScan()).created===0,'deferred round not duplicated');
+ let open=(await tasks()).find(t=>t.status!=='DONE');
+ await admin.patch('/rest/opportunities/'+id,{craReplyReviewAnchorAt:new Date(Date.now()-86400000).toISOString(),craReplyReviewEvidence:'合成测试：新的有效采购回复',craReplyReviewDecision:null,craReplyReviewNextAt:null});
+ const refreshed=await runScan();check(refreshed.created===0&&refreshed.future===1,'new effective reply resets 30-day clock');
+ const stale=(await api.get('/rest/tasks/'+open.id)).data.task;
+ check(stale.status==='DONE'&&!!stale.tiXingShiXiaoYuanYin&&!stale.jianChaWanChengShiJian,'old reply-cycle task stopped without false completed check');
+ await admin.patch('/rest/opportunities/'+id,{craReplyReviewAnchorAt:new Date(Date.now()-36*86400000).toISOString(),craReplyReviewEvidence:'合成测试：恢复另一个到期起点'});
+ check((await runScan()).created===1,'another independently due reply cycle can create review');
+ open=(await tasks()).find(t=>t.status!=='DONE');
+ await admin.patch('/rest/opportunities/'+id,{craReplyReviewScope:'EXCLUDED',craPurchaseStage:'采购备货'});
+ check((await runScan()).created===0,'paid procurement stage excludes review');
+ const stopped=(await api.get('/rest/tasks/'+open.id)).data.task;
+ check(stopped.status==='DONE'&&!!stopped.tiXingShiXiaoYuanYin&&!stopped.jianChaWanChengShiJian,'paid exclusion stops open review without false completion');
+ return {checks,fixtureId:id,fixtureTaskIds:(await tasks()).map(t=>t.id),simulation:'test-only dates',modelCalls:0};
+};

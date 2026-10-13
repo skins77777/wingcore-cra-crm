@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "chat-signal.handoff.v1",
+  "companyName": "",
+  "status": "draft",
+  "workspaceRef": null,
+  "timezone": null,
+  "blueprint": {"path": null, "version": null, "confirmed": false},
+  "runtime": {"artifactRef": null, "version": null, "capabilities": [], "verificationRef": null},
+  "fields": [],
+  "rules": [],
+  "channels": [],
+  "cases": [],
+  "unresolved": []
+}

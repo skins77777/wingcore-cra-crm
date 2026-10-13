@@ -1,0 +1,4 @@
+interface:
+  display_name: "CRA 部署指导"
+  short_description: "用企业自己的业务答案衔接 Twenty、聊天和模型配置，完成部署并学会调整"
+  default_prompt: "使用 $cra-setup，读取我的现有资料，从尚未完成的步骤开始，帮我梳理业务并部署属于自己的 CRM 和聊天自动化。"

@@ -1,0 +1,9 @@
+{
+  "proxies": {
+    "http-proxy": "http://127.0.0.1:10808",
+    "https-proxy": "http://127.0.0.1:10808",
+    "no-proxy": "localhost,127.0.0.1,::1,db,redis,server,worker"
+  },
+  "log-driver": "json-file",
+  "log-opts": {"max-size": "10m", "max-file": "3"}
+}

@@ -1,0 +1,9 @@
+services:
+  server:
+    image: twentycrm/twenty@sha256:81b6444c146fc39aec5e8de6ff6f996c78714910abf117f129ba78c925690dfd
+  worker:
+    image: twentycrm/twenty@sha256:81b6444c146fc39aec5e8de6ff6f996c78714910abf117f129ba78c925690dfd
+  db:
+    image: postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+  redis:
+    image: redis@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85

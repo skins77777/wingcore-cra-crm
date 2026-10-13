@@ -1,0 +1,334 @@
+{
+  "application": {
+    "universalIdentifier": "9f668dec-9996-41d9-8240-5656232210a6",
+    "displayName": "待审核",
+    "description": "集中处理企业规则要求人工确认的 CRM 变更，查看依据、决定和执行结果。",
+    "applicationVariables": {
+      "CRA_QUOTE_API_TOKEN": {
+        "universalIdentifier": "d3b424a0-764b-41c7-81b7-e5e6eb2e8c03",
+        "description": "报价模块专用服务端通信Token，禁止传入前端",
+        "isSecret": true
+      },
+      "CRA_QUOTE_WORKSPACE_ID": {
+        "universalIdentifier": "d3b424a0-764b-41c7-81b7-e5e6eb2e8c04",
+        "description": "报价登记后台工作区UUID",
+        "isSecret": true
+      },
+      "CRA_QUOTE_MEMBER_SCOPES": {
+        "universalIdentifier": "d3b424a0-764b-41c7-81b7-e5e6eb2e8c05",
+        "description": "JSON成员授权表：成员UUID映射商机UUID数组，显式星号代表全部商机",
+        "isSecret": true
+      },
+      "CRA_REVIEW_API_URL": {
+        "universalIdentifier": "a1b7cb12-87ca-4c98-859e-716cc97a04da",
+        "description": "客户审核后台的 HTTPS 地址；不含查询参数或凭据",
+        "isSecret": true
+      },
+      "CRA_REVIEW_API_TOKEN": {
+        "universalIdentifier": "22dab01b-ac70-448f-bb8f-3995880cab16",
+        "description": "仅供服务端使用、绑定客户工作区的审核 API Token",
+        "isSecret": true
+      },
+      "CRA_REVIEW_WORKSPACE_ID": {
+        "universalIdentifier": "e9cb5a54-6c37-41a3-ba64-7cb3b9c33b57",
+        "description": "客户后台的实际工作区标识，无作者测试前缀限制",
+        "isSecret": true
+      },
+      "CRA_REVIEWER_MEMBER_IDS": {
+        "universalIdentifier": "213d6bed-0a94-46b7-a580-c1fce33aa6ba",
+        "description": "允许处理审核的 Twenty workspaceMemberId，逗号分隔；后台仍校验逐项权限",
+        "isSecret": true
+      }
+    },
+    "galleryImages": [],
+    "defaultRoleUniversalIdentifier": "4f99d47e-93fc-404b-9ea2-2ce062db019d",
+    "aboutDescription": "# Twenty 待审核应用 · CRA 客户版\n\n本目录随 chat-signal 分发，提供可构建的 Twenty 应用源码：侧边栏“待审核”、审核列表与详情、通过/拒绝、备注、候选选择、决定及执行状态；以及商机详情菜单中的“登记报价事实”入口和侧栏表单。审核原因、字段和选项来自客户后台，不固定行业、对象或审核类型。\n\n先完成 crm-fde 和 chat-signal 的业务规则确认，再按 [配置与验收指导](../../references/13-review-app.md) 配置客户的规则和应用。业务规则留在共同档案，客户不需要编辑 TypeScript 或填写 API 契约。\n\n## 组成与边界\n\n- Twenty 中的页面和两个登录态服务端函数；前端不接触外部 Token。\n- 客户后台按 [接口约定](API.md) 提供审核事项、保存决定和衔接执行；可以适配已有服务，不要求新的数据库或云服务。\n- 当前 v1 源码只提供业务审核；独立系统异常区、复制排查信息、自动刷新/新事项提示、侧栏计数或全局铃铛尚未包含。实施时按 [页面布局与通知要求](../../references/13-review-app.md) 在客户副本补齐并验证，不能把错误日志塞成业务审核来冒充这些功能。\n- 页面不会自行判断哪些变更需要审核，不直接写 CRM，也不内置消息接入或自动化执行器。安装后缺少后台时显示读取错误，不能假装“没有待审核事项”。\n- 报价入口从当前商机详情页启动，读取商机名称、客户/联系人（Twenty返回时提供）和4-C返回的T1报价快照；提交只通过登录态函数代理到4-C。`unknown`、`not_quoted`、`draft`只新增登记；`sent`额外传递页面读取的`updatedAt`版本、轮次、发送时间、渠道和依据，由4-C执行条件更新与回读。\n- 在Twenty商机详情页打开记录操作菜单并选择“登记报价事实”，侧栏展示状态表单。可重试结果使用同一提交编号和原始请求内容；冲突不会显示成成功。成功时按4-C响应显示登记结果和T1字段是否更新。\n- 作者系统的同步按钮、数据库直连、工作区、成员 ID、记录 ID、域名、三类审核白名单及测试记录均未随包复制。\n\n报价入口关联服务端函数`/cra-quotes/read`和`/cra-quotes/register`，详见[项目4-C报价接口约定](../../deployment/review/quote-entry.md)。生产使用前仍需按该文档设置报价后台Token、工作区和成员范围，并在目标Twenty应用发布这两个函数；源码构建成功不代表生产后台或应用已经启用。\n\n## 本地准备\n\n把本目录源码复制到客户项目的 `integrations/twenty-approval`（已有目录先比较），在副本中安装和构建，保留原 Skill 资产用于版本比较。Node.js >=24.5，SDK 固定 2.41.0；目标 Twenty 版本的兼容性仍需现场验证。\n\n```sh\nnpm ci\nnpm test\nnpm run typecheck\nnpm run build\n```\n\n`package-lock.json` 锁定依赖；构建产物在本地生成，不把 node_modules、构建缓存或客户配置放回通用包。按实际目标核实 CLI 的 `auth`、`remote`、`plan`、`apply` 帮助，再预览和非删除式发布，不使用会移除未声明资源的同步。\n\n应用元数据使用本客户版的新身份，与作者旧 App 分离。同一份安装的升级保持标识稳定；如果在同一 Twenty 实例给另一个注册所有者安装源码副本，首次注册前由 Codex 为整套定义生成一致的新标识并保存映射，不能在每次升级时重生成。[官方注册与发布说明](https://docs.twenty.com/developers/extend/apps/operations/publishing)\n\n## 应用变量\n\n| 变量 | 配置来源 |\n|---|---|\n| CRA_REVIEW_API_URL | 客户审核后台的 HTTPS 根地址，可含路径前缀；不能含凭据、查询或锚点 |\n| CRA_REVIEW_API_TOKEN | 后台签发且绑定客户工作区的服务端 Token |\n| CRA_REVIEW_WORKSPACE_ID | 客户后台实际工作区 ID，使用字母、数字、下划线或连字符 |\n| CRA_REVIEWER_MEMBER_IDS | 该 Twenty 工作区中获授权审核人的 workspaceMemberId，逗号分隔；不是全局 user ID |\n\n四项均声明为 Secret，由目标应用设置注入服务端。没有预设值或旧环境回退。页面展示的具体事项与决定权限还要由后台按成员、规则与数据范围校验。规则调整通常只改共同业务档案和后台配置，无需重编译页面。[官方应用配置与 Secret 说明](https://docs.twenty.com/developers/extend/apps/config/application)\n\n## 来源与许可记录\n\n按项目所有者本次指令，将其“待审核”应用纳入 CRA 套装。页面布局及导航定义沿用已有实现的结构，其余客户版代码在 CRA 中按通用审核请求重新整理。应用身份重新生成；源项目及作者生产环境未修改。\n\n保留私有分发属性 `private: true`、`UNLICENSED`；本次纳入客户套装不宣称公共开源许可。第三方依赖的许可随其 npm 包保留。\n",
+    "yarnLockChecksum": null,
+    "packageJsonChecksum": "e340e61108af18279b2473f410f3ce1f",
+    "requiredServerVersionRange": null
+  },
+  "objects": [],
+  "fields": [
+    {
+      "universalIdentifier": "146de946-d0e4-59da-a5fc-85a3028ea905",
+      "objectUniversalIdentifier": "20202020-e674-48e5-a542-72570eee7213",
+      "type": "TEXT",
+      "name": "craWhatsappIdentity",
+      "label": "WhatsApp渠道身份",
+      "isNullable": true,
+      "isUnique": true,
+      "isUIEditable": true
+    },
+    {
+      "universalIdentifier": "3c483d5f-0a28-5c03-9145-79ee83ce30c5",
+      "objectUniversalIdentifier": "20202020-e674-48e5-a542-72570eee7213",
+      "type": "TEXT",
+      "name": "craChatSummary",
+      "label": "沟通摘要",
+      "isNullable": true,
+      "isUnique": false,
+      "isUIEditable": true
+    },
+    {
+      "universalIdentifier": "4df47f75-f547-5780-b352-a3d06e58230b",
+      "objectUniversalIdentifier": "20202020-9549-49dd-b2b2-883999db8938",
+      "type": "TEXT",
+      "name": "craFulfilmentStatus",
+      "label": "当前进展",
+      "isNullable": true,
+      "isUnique": false,
+      "isUIEditable": true
+    },
+    {
+      "universalIdentifier": "671824c2-3d08-52a3-9873-36f52c15304d",
+      "objectUniversalIdentifier": "20202020-e674-48e5-a542-72570eee7213",
+      "type": "TEXT",
+      "name": "craSource",
+      "label": "客户来源（聊天确认）",
+      "isNullable": true,
+      "isUnique": false,
+      "isUIEditable": true
+    },
+    {
+      "universalIdentifier": "b87bdf56-9756-5747-8bb7-22e5c49f3753",
+      "objectUniversalIdentifier": "20202020-e674-48e5-a542-72570eee7213",
+      "type": "TEXT",
+      "name": "craCountry",
+      "label": "国家（聊天确认）",
+      "isNullable": true,
+      "isUnique": false,
+      "isUIEditable": true
+    },
+    {
+      "universalIdentifier": "bd8040e7-2a0b-5b3a-bfb7-e16242691542",
+      "objectUniversalIdentifier": "20202020-9549-49dd-b2b2-883999db8938",
+      "type": "TEXT",
+      "name": "craChatSummary",
+      "label": "采购沟通摘要",
+      "isNullable": true,
+      "isUnique": false,
+      "isUIEditable": true
+    },
+    {
+      "universalIdentifier": "caa52cb5-9a98-56f3-a674-2ff1da007997",
+      "objectUniversalIdentifier": "20202020-9549-49dd-b2b2-883999db8938",
+      "type": "TEXT",
+      "name": "craPurchaseStage",
+      "label": "采购阶段",
+      "isNullable": true,
+      "isUnique": false,
+      "isUIEditable": true
+    }
+  ],
+  "indexes": [],
+  "permissionFlags": [],
+  "roles": [
+    {
+      "universalIdentifier": "4f99d47e-93fc-404b-9ea2-2ce062db019d",
+      "label": "待审核服务角色",
+      "description": "提供审核入口，不直接读写 CRM 业务对象",
+      "canReadAllObjectRecords": false,
+      "canUpdateAllObjectRecords": false,
+      "canSoftDeleteAllObjectRecords": false,
+      "canDestroyAllObjectRecords": false,
+      "objectPermissions": [],
+      "fieldPermissions": [],
+      "rowLevelPermissionPredicateGroups": [],
+      "rowLevelPermissionPredicates": [],
+      "permissionFlagUniversalIdentifiers": []
+    },
+    {
+      "universalIdentifier": "510eea4e-a8f1-4d8d-a89d-ff572d858cc8",
+      "label": "CRA 聊天客户与商机写入",
+      "description": "只读写客户和商机；无删除、订单、公司、任务或设置权限",
+      "canBeAssignedToApiKeys": true,
+      "canBeAssignedToUsers": false,
+      "canBeAssignedToAgents": false,
+      "canUpdateAllSettings": false,
+      "canAccessAllTools": false,
+      "canReadAllObjectRecords": false,
+      "canUpdateAllObjectRecords": false,
+      "canSoftDeleteAllObjectRecords": false,
+      "canDestroyAllObjectRecords": false,
+      "objectPermissions": [
+        {
+          "objectUniversalIdentifier": "20202020-e674-48e5-a542-72570eee7213",
+          "canReadObjectRecords": true,
+          "canUpdateObjectRecords": true,
+          "canSoftDeleteObjectRecords": false,
+          "canDestroyObjectRecords": false,
+          "universalIdentifier": "67f11a75-c290-57af-9fa0-660a99ffe5ca"
+        },
+        {
+          "objectUniversalIdentifier": "20202020-9549-49dd-b2b2-883999db8938",
+          "canReadObjectRecords": true,
+          "canUpdateObjectRecords": true,
+          "canSoftDeleteObjectRecords": false,
+          "canDestroyObjectRecords": false,
+          "universalIdentifier": "29fb124d-ed46-5207-894f-aa211d0bd6f4"
+        }
+      ],
+      "fieldPermissions": [],
+      "rowLevelPermissionPredicateGroups": [],
+      "rowLevelPermissionPredicates": [],
+      "permissionFlagUniversalIdentifiers": []
+    }
+  ],
+  "skills": [],
+  "agents": [],
+  "connectionProviders": [],
+  "logicFunctions": [
+    {
+      "universalIdentifier": "7725f688-d5d4-4957-a544-dc15727e54d0",
+      "name": "cra-decide-review",
+      "description": "保存当前成员对指定审核方案的通过或拒绝决定",
+      "timeoutSeconds": 10,
+      "httpRouteTriggerSettings": {
+        "path": "/cra-review/decision",
+        "httpMethod": "POST",
+        "isAuthRequired": true
+      },
+      "handlerName": "default.config.handler",
+      "sourceHandlerPath": "src\\logic-functions\\decide-approval.logic-function.ts",
+      "builtHandlerPath": "src\\logic-functions\\decide-approval.logic-function.mjs",
+      "builtHandlerChecksum": "dfd0a90ff02baf0da51671706f91ce28"
+    },
+    {
+      "universalIdentifier": "94f51da4-3ba1-41f2-a1bb-3a3261dcc1c3",
+      "name": "cra-list-reviews",
+      "description": "读取当前授权成员可处理的审核事项",
+      "timeoutSeconds": 10,
+      "httpRouteTriggerSettings": {
+        "path": "/cra-review/requests",
+        "httpMethod": "GET",
+        "isAuthRequired": true
+      },
+      "handlerName": "default.config.handler",
+      "sourceHandlerPath": "src\\logic-functions\\list-approvals.logic-function.ts",
+      "builtHandlerPath": "src\\logic-functions\\list-approvals.logic-function.mjs",
+      "builtHandlerChecksum": "1f05a3de8de35d59e920915c3acdd732"
+    },
+    {
+      "universalIdentifier": "9df10b18-4482-4a31-9e7e-3d87ecb7b6b4",
+      "name": "cra-list-review-errors",
+      "description": "读取当前授权成员的系统处理异常",
+      "timeoutSeconds": 10,
+      "httpRouteTriggerSettings": {
+        "path": "/cra-review/errors",
+        "httpMethod": "GET",
+        "isAuthRequired": true
+      },
+      "handlerName": "default.config.handler",
+      "sourceHandlerPath": "src\\logic-functions\\list-errors.logic-function.ts",
+      "builtHandlerPath": "src\\logic-functions\\list-errors.logic-function.mjs",
+      "builtHandlerChecksum": "b9fd05b84f6ef2448c0506aaf1d9414f"
+    },
+    {
+      "universalIdentifier": "d3b424a0-764b-41c7-81b7-e5e6eb2e8c01",
+      "name": "cra-get-quote-entry",
+      "description": "读取当前成员授权商机的报价登记和提交处理结果",
+      "timeoutSeconds": 70,
+      "httpRouteTriggerSettings": {
+        "path": "/cra-quotes/read",
+        "httpMethod": "POST",
+        "isAuthRequired": true
+      },
+      "handlerName": "default.config.handler",
+      "sourceHandlerPath": "src\\logic-functions\\get-quote-entry.logic-function.ts",
+      "builtHandlerPath": "src\\logic-functions\\get-quote-entry.logic-function.mjs",
+      "builtHandlerChecksum": "99b7cd7c6ee493c0f13998f8186302b4"
+    },
+    {
+      "universalIdentifier": "d3b424a0-764b-41c7-81b7-e5e6eb2e8c02",
+      "name": "cra-submit-quote-entry",
+      "description": "登记人工报价事实，校验并回读三个T1报价字段",
+      "timeoutSeconds": 70,
+      "httpRouteTriggerSettings": {
+        "path": "/cra-quotes/register",
+        "httpMethod": "POST",
+        "isAuthRequired": true
+      },
+      "handlerName": "default.config.handler",
+      "sourceHandlerPath": "src\\logic-functions\\submit-quote-entry.logic-function.ts",
+      "builtHandlerPath": "src\\logic-functions\\submit-quote-entry.logic-function.mjs",
+      "builtHandlerChecksum": "527e564c2d0a92c67359ee3eec6c36c0"
+    }
+  ],
+  "frontComponents": [
+    {
+      "universalIdentifier": "0875541f-a9b5-473b-b4b5-6400b85c364a",
+      "name": "cra-quote-entry",
+      "description": "在商机侧栏登记报价事实并显示后台处理结果",
+      "componentName": "QuoteEntry",
+      "sourceComponentPath": "src\\front-components\\quote-entry.tsx",
+      "builtComponentPath": "src\\front-components\\quote-entry.mjs",
+      "builtComponentChecksum": "d3ccf57e77bcbddfbc8c8b9a3a1f9998c40a29737a06ba3ce4fd05e420b69446",
+      "isHeadless": false,
+      "usesSdkClient": false
+    },
+    {
+      "universalIdentifier": "89d8c12b-d9d7-4b79-ab01-b2b86ddb7c4c",
+      "name": "cra-approval-center",
+      "description": "依据客户规则展示审核事项、证据、决定及执行状态",
+      "componentName": "ApprovalCenter",
+      "sourceComponentPath": "src\\front-components\\approval-center.tsx",
+      "builtComponentPath": "src\\front-components\\approval-center.mjs",
+      "builtComponentChecksum": "31a452a91625847b2de00f383f3d94c11d9ba90131dd60d825d1c85b6fae554d",
+      "isHeadless": false,
+      "usesSdkClient": false
+    }
+  ],
+  "publicAssets": [],
+  "views": [],
+  "viewFields": [],
+  "navigationMenuItems": [
+    {
+      "universalIdentifier": "bb1a3d0d-b5af-47dd-ae08-582319a41bdb",
+      "name": "待审核",
+      "icon": "IconShieldCheck",
+      "color": "orange",
+      "position": 1,
+      "type": "PAGE_LAYOUT",
+      "pageLayoutUniversalIdentifier": "f597ba45-7289-49c2-9b4b-c2f93f3703b3"
+    }
+  ],
+  "pageLayouts": [
+    {
+      "universalIdentifier": "f597ba45-7289-49c2-9b4b-c2f93f3703b3",
+      "name": "待审核",
+      "type": "STANDALONE_PAGE",
+      "tabs": [
+        {
+          "universalIdentifier": "98f3030d-0adb-4bf9-83d2-47b62465d0bf",
+          "title": "审批中心",
+          "position": 0,
+          "icon": "IconShieldCheck",
+          "layoutMode": "VERTICAL_LIST",
+          "widgets": [
+            {
+              "universalIdentifier": "0bef967b-4538-4f84-b078-246103c76356",
+              "title": " ",
+              "type": "FRONT_COMPONENT",
+              "configuration": {
+                "configurationType": "FRONT_COMPONENT",
+                "frontComponentUniversalIdentifier": "89d8c12b-d9d7-4b79-ab01-b2b86ddb7c4c"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pageLayoutTabs": [],
+  "pageLayoutWidgets": [],
+  "commandMenuItems": [
+    {
+      "universalIdentifier": "20b55026-54bd-4565-a40b-c405d50249ad",
+      "label": "登记报价事实",
+      "shortLabel": "登记报价",
+      "availabilityObjectUniversalIdentifier": "20202020-9549-49dd-b2b2-883999db8938",
+      "frontComponentUniversalIdentifier": "0875541f-a9b5-473b-b4b5-6400b85c364a"
+    }
+  ],
+  "timelineActivityTypes": []
+}

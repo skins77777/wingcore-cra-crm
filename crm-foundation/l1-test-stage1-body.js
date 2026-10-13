@@ -1,0 +1,20 @@
+export const main=async()=>{
+ const admin=new RestApiClient({baseUrl:'http://server:3000'});
+ const api=new RestApiClient({baseUrl:'http://server:3000',token:process.env.CRA_T1_API_KEY});
+ const id='73779383-9e27-5e0f-9b74-c7fb685e646b';
+ if((await admin.get('/rest/opportunities/'+id).catch(()=>null))?.data?.opportunity)throw new Error('Fixture exists; inspect before rerun');
+ const p=await admin.get('/rest/people/8b8e32d1-4880-4d99-8f93-dff1a338b7d6');
+ const past=new Date(Date.now()-35*86400000).toISOString();
+ await admin.post('/rest/opportunities',{id,name:'TEST｜L1无回复复核｜非业务',stage:'NEW',ownerId:p.data.person.keHuFuZeRenId,craPurchaseStage:'询盘',craReplyReviewScope:'UNPAID_PRESALES',craReplyReviewAnchorAt:past,craReplyReviewEvidence:'合成测试：客户有效采购回复，非真实业务'});
+ const checks=[];const check=(v,label)=>{if(!v)throw new Error(label);checks.push(label);};
+ check((await runScan()).created===1,'overdue verified presales creates one review');
+ check((await runScan()).created===0,'unhandled review not duplicated');
+ const r=await api.get('/rest/tasks',{query:{filter:'craReplyReviewOpportunityId[eq]:'+id,limit:200}});check(r.data.tasks.length===1,'one task uniquely references fixture');const task=r.data.tasks[0];
+ const future=new Date(Date.now()+6*86400000).toISOString();
+ await admin.patch('/rest/opportunities/'+id,{craReplyReviewAgreedAt:future});await runScan();
+ const after=await api.get('/rest/tasks/'+task.id);check(Date.parse(after.data.task.dueAt)===Date.parse(future),'customer later appointment updates same task');
+ await api.patch('/rest/tasks/'+task.id,{status:'DONE'});
+ await admin.patch('/rest/opportunities/'+id,{craReplyReviewAgreedAt:null,craReplyReviewDecision:'DEFER',craReplyReviewNextAt:future});
+ check((await runScan()).created===0,'resolved deferral waits for specified future date');
+ return {checks,fixtureId:id,taskId:task.id,fixtureOnly:true,modelCalls:0};
+};

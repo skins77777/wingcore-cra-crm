@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-13",
+  "scope": "Local source and synthetic tests only; no production requests or publishing",
+  "productionConfigState": {
+    "quoteEnabled": false,
+    "quoteKeyConfigured": false,
+    "bridgeTokenConfigured": false,
+    "workspaceConfigured": false,
+    "scopesConfigured": false
+  },
+  "frontend": {
+    "requestMethods": [
+      "post",
+      "post"
+    ],
+    "functionPaths": [
+      "/s/cra-quotes/read",
+      "/s/cra-quotes/register"
+    ],
+    "sourceHasTwentyKeyReference": false,
+    "bundleHasTwentyKeyReference": false,
+    "bundleHasBridgeTokenReference": false,
+    "sourceCallsDirectOpportunityRest": false,
+    "bundleCallsDirectOpportunityRest": false
+  },
+  "checks": {
+    "pythonQuoteTests": {
+      "passed": 49,
+      "failed": 0
+    },
+    "applicationTests": {
+      "passed": 14,
+      "failed": 0,
+      "quoteTests": 6
+    },
+    "typecheck": "passed",
+    "localBuild": {
+      "status": "passed",
+      "builtFiles": 15
+    }
+  },
+  "readAdapterFields": [
+    "id",
+    "updatedAt",
+    "deletedAt",
+    "craT1QuoteRound",
+    "craT1QuoteSentAt",
+    "craT1QuoteEvidence"
+  ],
+  "crmWriteFields": [
+    "craT1QuoteRound",
+    "craT1QuoteSentAt",
+    "craT1QuoteEvidence"
+  ],
+  "fileSha256": {
+    "scripts/quote_entry.py": "0619017494bcfb10e0e3d56bdfff5a36ac3f93300ec41df4888f2f64576396fe",
+    "scripts/test-quote-entry.py": "0f8eef6cc8ec8c4a1a281b03687ea1845fcd65f4bf1b83ac4e1296acb5de0b48",
+    "integrations/twenty-approval/src/front-components/quote-entry.tsx": "5c4439272ac145802eb825ecaf2f3317de63d2084ec4ffee4880db799b36c8ed",
+    "integrations/twenty-approval/src/lib/quote-entry.ts": "5314d5f1aabc1dbfd0e2bf669faed87d243546bc39cae6c0a5af95dc2e035322",
+    "integrations/twenty-approval/src/logic-functions/get-quote-entry.logic-function.ts": "8b5d925ea68068828908359d8183e1d57482090cf30796dd809733d0cc9b863a",
+    "integrations/twenty-approval/src/logic-functions/submit-quote-entry.logic-function.ts": "cee34d07614a70a421795dea1040991bb073e3c35c55446475d3f7e78ad00f0b",
+    "integrations/twenty-approval/tests/quote-entry.test.ts": "8ffbfc37abc5d9b5af9b4304f90176a2c448f1ff9f865c0192f9a93273e6fd74"
+  }
+}

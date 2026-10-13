@@ -1,0 +1,8 @@
+{
+  "TwentyVersion": "v2.45.0",
+  "GitTag": "twenty/v2.45.0",
+  "Commit": "7e1431c84adbb264db98ab8b8d008a8401b6d4d6",
+  "Release": "https://github.com/twentyhq/twenty/releases/tag/twenty/v2.45.0",
+  "ComposeSHA256": "BACD817FCEF85ABBCB6A603A6C093375313460037FAE67D73D45C16F6D85BC7D",
+  "EnvironmentExampleSHA256": "DC5B4C779C5778A6BD40E39D338DAE81815556094904B6DACC7D31B95E9D0865"
+}

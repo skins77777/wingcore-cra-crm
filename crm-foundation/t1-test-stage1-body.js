@@ -1,0 +1,22 @@
+export const main=async()=>{
+ const admin=new RestApiClient({baseUrl:'http://server:3000'});
+ const api=new RestApiClient({baseUrl:'http://server:3000',token:process.env.CRA_T1_API_KEY});
+ const id='48bf7b49-8f2e-5f5b-bdd7-a50bbf37b90a';
+ const p=await admin.get('/rest/people/8b8e32d1-4880-4d99-8f93-dff1a338b7d6');
+ const owner=p.data.person.keHuFuZeRenId;
+ const existing=await admin.get('/rest/opportunities/'+id).catch(()=>null);
+ if(existing?.data?.opportunity)throw new Error('Fixture already exists; inspect before rerun');
+ const past=new Date(Date.now()-4*86400000).toISOString();
+ await admin.post('/rest/opportunities',{id,name:'TEST｜T1报价提醒验收｜非业务',stage:'PROPOSAL',ownerId:owner,craPurchaseStage:'测试报价',craT1QuoteRound:'TEST-Q1',craT1QuoteSentAt:past,craT1QuoteEvidence:'合成测试：不是真实报价'});
+ const checks=[];const check=(v,label)=>{if(!v)throw new Error(label);checks.push(label);};
+ const first=await runScan();check(first.created===1,'creates one restricted-key task');
+ const repeat=await runScan();check(repeat.created===0&&repeat.kept===1,'repeat does not duplicate');
+ const list=await api.get('/rest/tasks',{query:{filter:'craT1OpportunityId[eq]:'+id,limit:200}});
+ const task=list.data.tasks[0];check(list.data.tasks.length===1,'one unique task linked to fixture');
+ const future=new Date(Date.now()+5*86400000).toISOString();
+ await admin.patch('/rest/opportunities/'+id,{craT1AgreedAt:future});await runScan();
+ const updated=await api.get('/rest/tasks/'+task.id);check(Date.parse(updated.data.task.dueAt)===Date.parse(future),'agreed date updates existing task');
+ await admin.patch('/rest/opportunities/'+id,{craT1AgreedAt:null});await runScan();
+ await api.patch('/rest/tasks/'+task.id,{status:'DONE'});
+ return {checks,fixtureId:id,taskId:task.id,completionEventPending:true,modelCalls:0};
+};
